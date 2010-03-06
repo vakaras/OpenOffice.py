@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import re
+import datetime
 
 from Exceptions import ValidationError
 
@@ -264,6 +265,84 @@ class PhoneNumberField(NumberField):
                 self.value = u''.join(
                         [unicode(i) for i in self.value])
 
+class DateField(object):
+    r"""Text field for valid date.
+
+    >>> #import interlude
+    >>> #interlude.interact(locals())
+
+    >>> a = DateField(u'2010-02-03', u'1990-01-01', u'2000-01-01', 
+    ... validate=False)
+    >>> a.min
+    datetime.datetime(1990, 1, 1, 0, 0)
+    >>> a.max
+    datetime.datetime(2000, 1, 1, 0, 0)
+    >>> a.text
+    u'2010-02-03'
+    >>> a.format
+    u'%Y-%m-%d'
+    >>> a.validate()    #doctest: +NORMALIZE_WHITESPACE
+    Traceback (most recent call last):
+    ...
+    ValidationError: u'Per\u017eengti r\u0117\u017eiai! Data 2010-02-03 
+    n\u0117ra tarp [1990-01-01;2000-01-01].'
+    >>> a = DateField(u'2010-02-03', u'1990-01-01', u'2000-01-01', 
+    ... validate=True)  #doctest: +NORMALIZE_WHITESPACE
+    Traceback (most recent call last):
+    ...
+    ValidationError: u'Per\u017eengti r\u0117\u017eiai! Data 2010-02-03 
+    n\u0117ra tarp [1990-01-01;2000-01-01].'
+    >>> a = DateField(u'1996-02-3', u'1990-01-01', u'2000-01-01', 
+    ... validate=True)
+    >>> a.value
+    '1996-02-03'
+    >>> a = DateField(u'1996-02-03', u'1990-01-01', u'2000-01-01', 
+    ... validate=True)
+    >>> a.value
+    '1996-02-03'
+
+    """
+    
+    def __init__(self, text, min=0, max=0, format=u'%Y-%m-%d', 
+            validate=False):
+        """Constructor.
+        @param text - input text;
+        @param min - minimum possible date (unicode or datetime);
+        @param max - maximum possible date (unicode or datetime);
+        @param validate - if validate in constructor.
+        """
+
+        self.text = text
+        self.format = format
+        if type(min) == unicode or type(min) == str:
+            self.min = datetime.datetime.strptime(min, self.format)
+        else:
+            self.min = min
+        if type(max) == unicode or type(max) == str:
+            self.max = datetime.datetime.strptime(max, self.format)
+        else:
+            self.max = max
+
+        if validate:
+            self.validate()
+    
+    def validate(self):
+        """Validates if text is correct date.
+        """
+
+        try:
+            self.date = datetime.datetime.strptime(self.text, self.format)
+        except ValueError, e:
+            raise ValidationError(u'Nekorektiškas datos formatas!')
+
+        if self.date < self.min or self.max < self.date:
+            raise ValidationError(
+                    u'Peržengti rėžiai! Data %s nėra tarp [%s;%s].'%(
+                        self.date.strftime(self.format),
+                        self.min.strftime(self.format),
+                        self.max.strftime(self.format)))
+
+        self.value = self.date.strftime(self.format)
 
 if __name__ == '__main__':
     import sys
