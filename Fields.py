@@ -230,13 +230,15 @@ class PhoneNumberField(NumberField):
         @param validate - if validate in constructor.
         """
         
+        for i in u' *()-':
+            text = text.replace(i, u'')
         self.text = text
 
         if len(self.text) and self.text[0] == u'+':
-            super(PhoneNumberField, self).__init__(text[1:])
+            super(PhoneNumberField, self).__init__(self.text[1:])
             self.international = True
         else:
-            super(PhoneNumberField, self).__init__(text)
+            super(PhoneNumberField, self).__init__(self.text)
             self.international = False
 
         if validate:
