@@ -49,6 +49,88 @@ class NumberField(object):
                         u'Turi būti ne daugiau nei %s '%(self.minlen) +
                         u'skaitmenys! (Yra %s.)'%(len(self.value)))
 
+class IntegerField(object):
+    r"""Text field, representing integer.
+
+    >>> #import interlude
+    >>> #interlude.interact(locals())
+
+    >>> n = IntegerField('a', validate=True)
+    Traceback (most recent call last):
+    ...
+    ValidationError: u'Turi b\u016bti sveikasis skai\u010dius!'
+    >>> n = IntegerField('-1000000000', validate=True)
+    >>> n.value
+    -1000000000
+    >>> n = IntegerField('30000000', validate=True)
+    >>> n.value
+    30000000
+    >>> n = IntegerField('30000000e3', validate=True)
+    Traceback (most recent call last):
+    ...
+    ValidationError: u'Turi b\u016bti sveikasis skai\u010dius!'
+    >>> n = IntegerField('3.14', validate=True)
+    Traceback (most recent call last):
+    ...
+    ValidationError: u'Turi b\u016bti sveikasis skai\u010dius!'
+    >>> n = IntegerField('0', min=6, max=12, 
+    ... validate=True)  #doctest: +NORMALIZE_WHITESPACE
+    Traceback (most recent call last):
+    ...
+    ValidationError: u'Skai\u010dius turi b\u016bti ne ma\u017eesnis nei 6!
+    (Yra 0.)'
+    >>> n = IntegerField('6', min=6, max=12, validate=True)
+    >>> n.value
+    6
+    >>> n = IntegerField('12', min=6, max=12, validate=True)
+    >>> n.value
+    12
+    >>> n = IntegerField('13', min=6, max=12, 
+    ... validate=True)  #doctest: +NORMALIZE_WHITESPACE
+    Traceback (most recent call last):
+    ...
+    ValidationError: u'Skai\u010dius turi b\u016bti ne didesnis nei 12! 
+    (Yra 13.)'
+    >>> 
+
+    """
+    
+    def __init__(self, text, min=None, max=None, validate=False):
+        """Constructor.
+        @param text - input text;
+        @param minlen - minum length of number in digits, 0 - means any;
+        @param maxlen - maximum length of number in digits, 0 - means any;
+        @param validate - if validate in constructor.
+        """
+
+        self.text = text
+        self.min = min
+        self.max = max
+
+        if validate:
+            self.validate()
+    
+    def validate(self):
+        """Validates if text is correct number.
+        """
+
+        try:
+            self.value = int(self.text)
+        except ValueError, e:
+            raise ValidationError(u'Turi būti sveikasis skaičius!')
+
+        if self.min != None:
+            if self.value < self.min:
+                raise ValidationError( 
+                        u'Skaičius turi būti ne mažesnis nei '+
+                        u'%s! (Yra %s.)'%(self.min, self.value))
+
+        if self.max != None:
+            if self.value > self.max:
+                raise ValidationError(
+                        u'Skaičius turi būti ne didesnis nei '+
+                        u'%s! (Yra %s.)'%(self.max, self.value))
+
 class NamesField(object):
     r"""Text field, which contains one or more names. (Words, whose first
     letter is capital and rest are small, separated by one spaces.)
