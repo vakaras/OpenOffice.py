@@ -105,15 +105,53 @@ class CSVDocument(Document):
                 try:
                     if i == 0:
                         for caption in line[:-1].split(field_separator):
-                            self.addColumn(caption[1:-1], [])     
+                            #self.addColumn(caption[1:-1], [])     
                             # FIXME: use text_separator
+                            self.addColumn(self.getElement(caption, 
+                                text_separator), [])
                     else:
                         row = []
                         for element in line[:-1].split(field_separator):
-                            row.append(element[1:-1])
+                            #row.append(element[1:-1])
+                            row.append(self.getElement(element,
+                                text_separator))
                         self.addRow(row)
                 except Exception, e:
-                    raise Exception(u'%s\nIn line %s'%(e, i))
+                    print u'%s\nIn line %s'%(e, i)
+                    raise
+
+    def getElement(self, e, ts):
+        """Unquotes element.
+        @param e - unicode string containing data;
+        @param ts - text separator;
+        @returns unicode string representing data.
+        """
+        if len(e) == 0:
+            return u''
+        elif len(e) == 1:
+            if e[0] == ts:
+                raise Exception(u'String separator alone!')
+            else:
+                return e
+        else:
+            if e[0] == ts:
+                if e[-1] != ts:
+                    raise Exception(
+                            u'No string separator at the end. '+ 
+                            u'Sub-line: "%s".'%( e))
+                elif ts in e[1:-1]:
+                    raise Exception(
+                            u'String separator in the middle of element! '+
+                            u'Sub-line: "%s".'%(e))
+                else:
+                    return e[1:-1]
+            else:
+                if ts in e: 
+                    raise Exception(
+                            u'String separator in the middle of element! '+
+                            u'Sub-line: "%s".'%(e))
+                else:
+                    return e
 
     def generateLine(self, list, fs, ts):
         """Generates line.
