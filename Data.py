@@ -117,7 +117,6 @@ class IdentityCode(NumberField):
         self.day = '%s%s'%(d1, d2)
         self.birth_date = '%s-%s-%s'%(self.year, self.month, self.day)
 
-
 if __name__ == '__main__':
     import sys
     reload(sys)
