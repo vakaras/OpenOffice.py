@@ -390,7 +390,7 @@ class DateField(object):
     """
     
     def __init__(self, text, min=0, max=0, 
-            formats=(u'%Y-%m-%d', u'%Y %m %d', u'%d %m %Y'),
+            formats=(u'%Y-%m-%d'),
             validate=False):
         """Constructor.
         @param text - input text;
@@ -451,7 +451,7 @@ class DateField(object):
                         self.min.strftime(self.formats[0]),
                         self.max.strftime(self.formats[0])))
 
-        self.value = self.date.strftime(self.format)
+        self.value = self.date.strftime(self.formats[0])
 
 if __name__ == '__main__':
     import sys
