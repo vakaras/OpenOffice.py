@@ -51,6 +51,8 @@ class School(object):
 
         if u'Liubertien' in title:      # FIXME: Workaround mismach
             title = u'Viešoji įstaiga Vilniaus privati gimnazija'
+        elif u'Kalniečių vidurinė' in title:
+            title = u'Kauno Antano Smetonos vidurinė mokykla'
 
         self.title = title
 
