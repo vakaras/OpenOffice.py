@@ -352,6 +352,8 @@ class PhoneNumberField(NumberField):
 class DateField(object):
     r"""Text field for valid date.
 
+    FIXME: Update doctest!
+
     >>> #import interlude
     >>> #interlude.interact(locals())
 
@@ -387,44 +389,67 @@ class DateField(object):
 
     """
     
-    def __init__(self, text, min=0, max=0, format=u'%Y-%m-%d', 
+    def __init__(self, text, min=0, max=0, 
+            formats=(u'%Y-%m-%d', u'%Y %m %d', u'%d %m %Y'),
             validate=False):
         """Constructor.
         @param text - input text;
         @param min - minimum possible date (unicode or datetime);
         @param max - maximum possible date (unicode or datetime);
+        @param formats - possible formats (in tryed order) in which date
+            could be written;
         @param validate - if validate in constructor.
         """
 
         self.text = text
-        self.format = format
+        self.formats = formats
         if type(min) == unicode or type(min) == str:
-            self.min = datetime.datetime.strptime(min, self.format)
+            #self.min = datetime.datetime.strptime(min, self.format)
+            self.min = self.convert(min)
         else:
             self.min = min
         if type(max) == unicode or type(max) == str:
-            self.max = datetime.datetime.strptime(max, self.format)
+            #self.max = datetime.datetime.strptime(max, self.format)
+            self.max = self.convert(max)
         else:
             self.max = max
 
         if validate:
             self.validate()
+
+    def convert(self, text):
+        """Converts text to datetime. If fails, raises ValidationError.
+        @param text - input text;
+        @returns datetime object.
+        """
+
+        date = None
+
+        for format in self.formats:
+            try:
+                date = datetime.datetime.strptime(text, format)
+            except ValueError, e:
+                pass
+            else:
+                break
+
+        if not date:
+            raise ValidationError(u'Data neatitiko nei vieno iš formatų!')
+        else:
+            return date
     
     def validate(self):
         """Validates if text is correct date.
         """
 
-        try:
-            self.date = datetime.datetime.strptime(self.text, self.format)
-        except ValueError, e:
-            raise ValidationError(u'Nekorektiškas datos formatas!')
+        self.date = self.convert(self.text)
 
         if self.date < self.min or self.max < self.date:
             raise ValidationError(
                     u'Peržengti rėžiai! Data %s nėra tarp [%s;%s].'%(
-                        self.date.strftime(self.format),
-                        self.min.strftime(self.format),
-                        self.max.strftime(self.format)))
+                        self.date.strftime(self.formats[0]),
+                        self.min.strftime(self.formats[0]),
+                        self.max.strftime(self.formats[0])))
 
         self.value = self.date.strftime(self.format)
 
