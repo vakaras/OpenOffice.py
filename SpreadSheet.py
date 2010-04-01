@@ -88,6 +88,20 @@ class Document(object):
         else:
             return self.getColumn(key)
 
+    def rows(self):
+        """Returns iterator through rows.
+        """
+        #for i, row in enumerate(zip(*self.data.values())):
+        #    yield row
+        for i in range(self.height):
+            row = {}
+            for cap in self.order:
+                row[cap] = self.data[cap][i]
+            yield row
+
+        # TODO: Check if works!
+        
+
 class CSVDocument(Document):
     """Object representing CSV document.
     """
