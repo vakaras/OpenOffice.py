@@ -213,8 +213,11 @@ class NamesField(object):
         cwords = []
         for word in words:
             if not word.isalpha():
-                raise ValidationError(
-                        u'Vardas turi būti sudarytas tik iš raidžių!')
+                for i in word.split(u'-'):
+                    if not i.isalpha():
+                        raise ValidationError( 
+                                u'Vardas turi būti sudarytas tik '\
+                                        u'iš raidžių!')
             cwords.append(word.title())
 
         self.value = u' '.join(cwords)
@@ -312,7 +315,7 @@ class PhoneNumberField(NumberField):
         @param validate - if validate in constructor.
         """
         
-        for i in u' *()-':
+        for i in u' *()-~':
             text = text.replace(i, u'')
         self.text = text
 
@@ -389,8 +392,8 @@ class DateField(object):
 
     """
     
-    def __init__(self, text, min=0, max=0, 
-            formats=(u'%Y-%m-%d'),
+    def __init__(self, text, min=None, max=None, 
+            formats=(u'%Y-%m-%d',),
             validate=False):
         """Constructor.
         @param text - input text;
@@ -444,13 +447,20 @@ class DateField(object):
 
         self.date = self.convert(self.text)
 
-        if self.date < self.min or self.max < self.date:
-            raise ValidationError(
-                    u'Peržengti rėžiai! Data %s nėra tarp [%s;%s].'%(
-                        self.date.strftime(self.formats[0]),
-                        self.min.strftime(self.formats[0]),
-                        self.max.strftime(self.formats[0])))
-
+        if not self.min is None:
+            if self.date < self.min:
+                raise ValidationError(
+                        u'Peržengti rėžiai! Data %s nėra tarp [%s;%s].'%(
+                            self.date.strftime(self.formats[0]),
+                            self.min.strftime(self.formats[0]),
+                            self.max.strftime(self.formats[0])))
+        if not self.max is None:
+            if self.max < self.date:
+                raise ValidationError(
+                        u'Peržengti rėžiai! Data %s nėra tarp [%s;%s].'%(
+                            self.date.strftime(self.formats[0]),
+                            self.min.strftime(self.formats[0]),
+                            self.max.strftime(self.formats[0])))
         self.value = self.date.strftime(self.formats[0])
 
 if __name__ == '__main__':
