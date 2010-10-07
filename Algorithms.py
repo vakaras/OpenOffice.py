@@ -32,36 +32,43 @@ class School(object):
         if title[-1] == u'"' or title[0] == u'\'':
             title = title[:-1] + u'“'
 
-        change = { 
-                u' "':                  u' „',
-                u'"':                   u'“',
-                u' r.':                 u' rajono',
-                u' m.':                 u' miesto',
-                u' pagr.':              u' pagrindinė',
-                u' vid.':               u' vidurinė',
-                u'Gimnazija':           u'gimnazija',
-                u' G ':                 u' gimnazija ',
-                u'g-ja':                u'gimnazija ',
-                u'm-kla':               u'mokykla',
-                u'm - kla':             u'mokykla',
-                u'm-la':                u'mokykla',
-                u'mok.':                u'mokykla',
-                u'KTUG':         
-                        u'Kauno technologijos universiteto gimnazija',
-                u'KTU':         
-                        u'Kauno technologijos universiteto ',
-                u'VDU':         
-                        u' Vytauto Didžiojo universiteto ',
-                u'NMKČMM':
+        change = ( 
+                (u' "',                 u' „'),
+                (u'"',                  u'“'),
+                (u',,',                 u'„'),
+                (u'=',                  u'ž'),
+                (u' r.',                u' rajono'),
+                (u' m.',                u' miesto'),
+                (u' pagr.',             u' pagrindinė'),
+                (u' pagrindine',        u' pagrindinė'),
+                (u' vid.',              u' vidurinė'),
+                (u' vidurine',          u' vidurinė'),
+                (u'Gimnazija',          u'gimnazija'),
+                (u' G ',                u' gimnazija '),
+                (u'g-ja',               u'gimnazija '),
+                (u'm-kla',              u'mokykla'),
+                (u'm-k',                u'mokykla'),
+                (u'm - kla',            u'mokykla'),
+                (u'm-la',               u'mokykla'),
+                (u'mok.',               u'mokykla'),
+                (u'mokykla',            u' mokykla '),
+                (u'v.m.',               u' vidurinė mokykla '),
+                (u'KTUG',         
+                        u'Kauno technologijos universiteto gimnazija'),
+                (u'KTU',         
+                        u'Kauno technologijos universiteto '),
+                (u'VDU',         
+                        u' Vytauto Didžiojo universiteto '),
+                (u'NMKČMM',
                         u'Nacionalinė Mikalojaus Konstantino '
-                        u'Čiurlionio menų mokykla',
-                }
-        ends = {
-                u'G':                   u' gimnazija ',
-                }
-        for k, v in change.items():
+                        u'Čiurlionio menų mokykla'),
+                )
+        ends = (
+                (u'G',                   u' gimnazija '),
+                )
+        for k, v in change:
             title = title.replace(k, v)
-        for k, v in ends.items():
+        for k, v in ends:
             if title.endswith(k):
                 title = title[:-len(k)] + v
 
@@ -79,8 +86,8 @@ class School(object):
         """
         simple = self.title.lower()
         remove = [ 
-                u' ',           # FIXME Hardcoded Lithuanian symbols.
-                u'„',
+                u' ',                   # FIXME: Hardcoded Lithuanian 
+                u'„',                   # symbols.
                 u'“',
                 u'-',
                 u'–',
@@ -98,12 +105,15 @@ class School(object):
         for i in remove:
             simple = simple.replace(i, u' ')
         replace = [
-                (u'ė', u'e')
+                (u'ė', u'e'),
+                (u'ų', u'u'),
+                (u'ž', u'z'),
+
                 ]
         for k, v in replace:
             simple = simple.replace(k, v)
         self.simple = simple
-        self.words = simple.split()
+        self.words = set(simple.split())
 
     def clear(self):
         """Clears matching number.
@@ -111,9 +121,16 @@ class School(object):
         self.matching = 0
 
     def inc(self):
-        """Increases matching number.
+        """Increases matching number. 
         """
         self.matching += 1
+
+    def add(self, word):
+        """Adds word match weight to matching number.
+        """
+        self.matching += 10
+        if word in (u'mokykla', u'vidurine', u'pagrindine', u'gimnazija',):
+            self.matching -= 1
 
     def get(self):
         """Returns matching number.
@@ -201,8 +218,8 @@ class Address(object):
             def notTown(part):
                 if part in (u'g.', u'pr.', u'sen.', u'skg.', u'mstl.') or \
                         part.endswith(u'ų') or part.endswith(u'u') or \
-                        part.endswith(u'io') or part.endswith(u'ios') or \
-                        part.endswith(u'o') or part.endswith(u'ios') or \
+                        part.endswith(u'io') or part.endswith(u'os') or \
+                        part.endswith(u'o') or part.endswith(u'os') or \
                         part.endswith(u'ies') or \
                         part.endswith(u'ės'):
                     return True

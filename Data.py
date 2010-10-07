@@ -117,6 +117,52 @@ class IdentityCode(NumberField):
         self.day = '%s%s'%(d1, d2)
         self.birth_date = '%s-%s-%s'%(self.year, self.month, self.day)
 
+class MailCode():
+    r"""Text field for valid Mail index codes.
+    
+    >>> mc = MailCode(u' LT- 48160', validate=True)
+    >>> mc.value
+    u'LT-48160'
+    >>> mc = MailCode(u' LT- 481640', validate=True)
+    Traceback (most recent call last):
+    ValidationError: u'Turi b\u016bti ne daugiau nei 5 skaitmenys! (Yra 6.)'
+    >>> mc = MailCode(u' LT- 482', validate=True)
+    Traceback (most recent call last):
+    ValidationError: u'Turi b\u016bti ne ma\u017eiau nei 5 skaitmenys! (Yra 3.)'
+    >>> mc = MailCode(u' 48243', validate=True)
+    >>> mc.value
+    u'LT-48243'
+
+    """
+
+    def __init__(self, code, validate=False):
+        """Constructor.
+        @param code - string representing mail index code.
+        @param validate - if validate in constructor.
+        """
+
+        self.text = code
+
+        if validate:
+            self.validate()
+
+    def validate(self):
+        """Validates if code
+        """
+
+        self.text = u''.join(self.text.upper().split())
+                                        # Remove whitespace.
+        
+        if self.text.startswith(u'LT-'):
+            self.text = self.text[3:]
+        elif self.text.startswith(u'LT'):
+            self.text = self.text[2:]
+
+        self.code = NumberField(self.text, 5, 5, validate=True)
+
+        self.value = u''.join(
+                [u'LT-'] + [unicode(i) for i in self.code.value])
+
 if __name__ == '__main__':
     import sys
     reload(sys)
